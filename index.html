@@ -848,7 +848,7 @@
         }
         .buttons-row {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.25rem;
             margin: 1rem 0.5rem 0 0;
             justify-content: center;
         }
@@ -1293,6 +1293,10 @@
             .buttons-row {
                 order: -1;
                 margin: 0;
+            }
+            .buttons-row .personality-btn, .buttons-row .busca-web-btn {
+                padding: 0.2rem 0.3rem;
+                font-size: 0.6rem;
             }
             .chat-input-container {
                 border-radius: 1.5rem;
@@ -2354,6 +2358,12 @@
                 <button id="toggle-sidebar-btn-mobile" class="menu-btn" title="Alternar menu">
                     <i class="fas fa-bars"></i>
                 </button>
+                <div class="buttons-row">
+                    <div id="personalidade-btn" title="Personalidade">P</div>
+                    <button id="busca-web-btn" class="busca-web-btn" title="Ativar busca na web">
+                        <i class="fas fa-globe"></i> Busca na Web
+                    </button>
+                </div>
                 <div class="mobile-title-share">
                     <h2 id="conversa-titulo-mobile">Selecione uma Conversa</h2>
                     <i id="share-btn-mobile" class="fas fa-share-alt" title="Compartilhar Conversa"></i>
@@ -2400,12 +2410,6 @@
                         </div>
                     </div>
                 </form>
-                <div class="buttons-row">
-                    <div id="personalidade-btn" title="Personalidade">P</div>
-                    <button id="busca-web-btn" class="busca-web-btn" title="Ativar busca na web">
-                        <i class="fas fa-globe"></i> Busca na Web
-                    </button>
-                </div>
             </footer>
         </main>
     </div>
