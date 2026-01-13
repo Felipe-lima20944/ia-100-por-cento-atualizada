@@ -583,7 +583,7 @@
         /* ÁREA DE INPUT MODERNIZADA            */
         /* ==================================== */
         .chat-input-area {
-            padding: 2rem;
+            padding: 8rem 8rem 4rem 2rem;
             background: var(--glass-bg);
             backdrop-filter: var(--blur-effect);
             border-top: 1px solid var(--glass-border);
@@ -844,22 +844,16 @@
         }
         .chat-input-area .personality-btn, .chat-input-area .busca-web-btn {
             display: inline-block;
-            margin: 0;
-        }
-        .buttons-row {
-            display: flex;
-            gap: 0.25rem;
             margin: 1rem 0.5rem 0 0;
-            justify-content: center;
         }
         .personality-btn {
             background: var(--glass-bg);
             backdrop-filter: var(--blur-effect);
             border: 1px solid var(--glass-border);
             color: var(--text-primary);
-            padding: 0.25rem 0.5rem;
+            padding: 0.5rem 0.75rem;
             border-radius: 0.75rem;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition-smooth);
@@ -875,8 +869,8 @@
             border: 1px solid var(--glass-border);
             border-radius: 0.75rem;
             color: var(--text-primary);
-            padding: 0.25rem 0.5rem;
-            font-size: 0.7rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition-smooth);
@@ -1286,17 +1280,7 @@
                 max-width: 100%;
             }
             .chat-input-area {
-                padding: 0 1rem 1rem 1rem;
-                display: flex;
-                flex-direction: column;
-            }
-            .buttons-row {
-                order: -1;
-                margin: 0;
-            }
-            .buttons-row .personality-btn, .buttons-row .busca-web-btn {
-                padding: 0.2rem 0.3rem;
-                font-size: 0.6rem;
+                padding: 4rem 1rem 3rem 1rem;
             }
             .chat-input-container {
                 border-radius: 1.5rem;
@@ -1333,9 +1317,6 @@
             .modal-content {
                 margin: 1rem;
                 padding: 1.5rem;
-            }
-            .chat-input-area .personality-btn, .chat-input-area .busca-web-btn {
-                margin: -0.5rem 0.5rem 0 0;
             }
             .toast {
                 bottom: 1rem;
@@ -2358,12 +2339,6 @@
                 <button id="toggle-sidebar-btn-mobile" class="menu-btn" title="Alternar menu">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="buttons-row">
-                    <div id="personalidade-btn" title="Personalidade">P</div>
-                    <button id="busca-web-btn" class="busca-web-btn" title="Ativar busca na web">
-                        <i class="fas fa-globe"></i> Busca na Web
-                    </button>
-                </div>
                 <div class="mobile-title-share">
                     <h2 id="conversa-titulo-mobile">Selecione uma Conversa</h2>
                     <i id="share-btn-mobile" class="fas fa-share-alt" title="Compartilhar Conversa"></i>
@@ -2371,7 +2346,7 @@
             </header>
             <div class="chat-messages" id="mensagens-container">
                 <div id="loader" class="loading-typing-indicator" style="display: none;">
-                    <div class="tech-spinner"></div>
+                    <canvas id="neural-canvas" width="200" height="40" style="margin-right: 0.5rem;"></canvas>
                     <span>Gerando conteúdo...</span>
                 </div>
                 <div id="no-chat-message" class="initial-info-message">
@@ -2391,10 +2366,6 @@
 
             </div>
             <footer class="chat-input-area">
-                <div id="personality-avatar-display" style="display: none; text-align: center; margin-bottom: 1rem;">
-                    <img id="personality-avatar-img" src="" alt="Avatar da Personalidade" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--glass-border); box-shadow: var(--shadow-md);">
-                    <p id="personality-name-display" style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;"></p>
-                </div>
                 <form id="chat-form">
                     <div id="file-previews" class="file-preview-container"></div>
                     <div class="chat-input-container">
@@ -2410,6 +2381,14 @@
                         </div>
                     </div>
                 </form>
+                <div id="personality-avatar-display" style="display: none; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); text-align: center;">
+                    <img id="personality-avatar-img" src="" alt="Avatar da Personalidade" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--glass-border); box-shadow: var(--shadow-md);">
+                    <p id="personality-name-display" style="margin-top: 0rem; font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;"></p>
+                </div>
+                <div id="personalidade-btn" title="Personalidade">P</div>
+                <button id="busca-web-btn" class="busca-web-btn" title="Ativar busca na web">
+                    <i class="fas fa-globe"></i> Busca na Web
+                </button>
             </footer>
         </main>
     </div>
@@ -3672,14 +3651,142 @@
                 }
             });
 
+            let neuralCanvas, neuralCtx, neuralAnimationId;
+            let neuralNodes = [];
+            let neuralConnections = [];
+            let signals = [];
+
+            function initNeuralNetwork() {
+                neuralCanvas = document.getElementById('neural-canvas');
+                if (!neuralCanvas) return;
+                neuralCtx = neuralCanvas.getContext('2d');
+                
+                // Create nodes
+                const numNodes = 8;
+                const centerY = neuralCanvas.height / 2;
+                for (let i = 0; i < numNodes; i++) {
+                    neuralNodes.push({
+                        x: (i / (numNodes - 1)) * neuralCanvas.width,
+                        y: centerY + (Math.random() - 0.5) * 20,
+                        radius: 3,
+                        pulse: Math.random() * Math.PI * 2
+                    });
+                }
+                
+                // Create connections
+                for (let i = 0; i < neuralNodes.length - 1; i++) {
+                    neuralConnections.push({
+                        from: i,
+                        to: i + 1,
+                        strength: Math.random()
+                    });
+                }
+            }
+
+            function animateNeuralNetwork() {
+                if (!neuralCtx) return;
+                
+                neuralCtx.clearRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+                
+                // Update signals
+                signals.forEach((signal, index) => {
+                    signal.progress += signal.speed;
+                    if (signal.progress >= 1 || signal.progress <= 0) {
+                        signals.splice(index, 1);
+                    }
+                });
+                
+                // Add new signals occasionally
+                if (Math.random() < 0.1) {
+                    const conn = neuralConnections[Math.floor(Math.random() * neuralConnections.length)];
+                    const reverse = Math.random() < 0.3; // 30% chance to go backwards
+                    signals.push({
+                        connection: conn,
+                        progress: reverse ? 1 : 0,
+                        speed: (reverse ? -1 : 1) * (0.02 + Math.random() * 0.03)
+                    });
+                }
+                
+                // Draw connections
+                neuralConnections.forEach(conn => {
+                    const fromNode = neuralNodes[conn.from];
+                    const toNode = neuralNodes[conn.to];
+                    
+                    const alpha = 0.3 + 0.4 * Math.sin(Date.now() * 0.005 + conn.strength * Math.PI);
+                    neuralCtx.strokeStyle = `rgba(26, 115, 232, ${alpha})`;
+                    neuralCtx.lineWidth = 2;
+                    neuralCtx.beginPath();
+                    neuralCtx.moveTo(fromNode.x, fromNode.y);
+                    neuralCtx.lineTo(toNode.x, toNode.y);
+                    neuralCtx.stroke();
+                });
+                
+                // Draw signals
+                signals.forEach(signal => {
+                    const conn = signal.connection;
+                    const fromNode = neuralNodes[conn.from];
+                    const toNode = neuralNodes[conn.to];
+                    
+                    const x = fromNode.x + (toNode.x - fromNode.x) * signal.progress;
+                    const y = fromNode.y + (toNode.y - fromNode.y) * signal.progress;
+                    
+                    neuralCtx.fillStyle = '#ffffff';
+                    neuralCtx.shadowColor = '#1a73e8';
+                    neuralCtx.shadowBlur = 3;
+                    neuralCtx.beginPath();
+                    neuralCtx.arc(x, y, 2, 0, Math.PI * 2);
+                    neuralCtx.fill();
+                    neuralCtx.shadowBlur = 0;
+                });
+                
+                // Draw nodes
+                neuralNodes.forEach(node => {
+                    node.pulse += 0.1;
+                    const scale = 1 + 0.3 * Math.sin(node.pulse);
+                    
+                    neuralCtx.fillStyle = '#1a73e8';
+                    neuralCtx.beginPath();
+                    neuralCtx.arc(node.x, node.y, node.radius * scale, 0, Math.PI * 2);
+                    neuralCtx.fill();
+                    
+                    // Glow effect
+                    neuralCtx.shadowColor = '#1a73e8';
+                    neuralCtx.shadowBlur = 5;
+                    neuralCtx.fill();
+                    neuralCtx.shadowBlur = 0;
+                });
+                
+                neuralAnimationId = requestAnimationFrame(animateNeuralNetwork);
+            }
+
+            function startNeuralAnimation() {
+                if (!neuralCanvas) initNeuralNetwork();
+                if (neuralAnimationId) cancelAnimationFrame(neuralAnimationId);
+                animateNeuralNetwork();
+            }
+
+            function stopNeuralAnimation() {
+                if (neuralAnimationId) {
+                    cancelAnimationFrame(neuralAnimationId);
+                    neuralAnimationId = null;
+                }
+                if (neuralCtx) {
+                    neuralCtx.clearRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+                }
+                signals = []; // Clear signals
+            }
+
             function showLoading(loading) {
                 isLoading = loading;
                 loader.style.display = loading ? 'flex' : 'none';
                 sendButton.style.display = loading ? 'none' : 'flex';
                 cancelButton.style.display = loading ? 'flex' : 'none';
                 if (loading) {
+                    startNeuralAnimation();
                     mensagensContainer.appendChild(loader);
                     setTimeout(() => mensagensContainer.scrollTop = mensagensContainer.scrollHeight, 50);
+                } else {
+                    stopNeuralAnimation();
                 }
             }
 
@@ -4164,6 +4271,7 @@
                     shareBtnMobile.style.display = 'none';
                 }
 
+                initNeuralNetwork();
                 await loadPersonalidades();
                 await loadConversations();
 
