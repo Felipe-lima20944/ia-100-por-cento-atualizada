@@ -583,7 +583,7 @@
         /* ÁREA DE INPUT MODERNIZADA            */
         /* ==================================== */
         .chat-input-area {
-            padding: 8rem 8rem 4rem 2rem;
+            padding: 8rem 8rem 7rem 2rem;
             background: var(--glass-bg);
             backdrop-filter: var(--blur-effect);
             border-top: 1px solid var(--glass-border);
@@ -844,7 +844,7 @@
         }
         .chat-input-area .personality-btn, .chat-input-area .busca-web-btn {
             display: inline-block;
-            margin: 1rem 0.5rem 0 0;
+            margin: 2.5rem 0.5rem 0 0;
         }
         .personality-btn {
             background: var(--glass-bg);
@@ -1280,7 +1280,7 @@
                 max-width: 100%;
             }
             .chat-input-area {
-                padding: 4rem 1rem 3rem 1rem;
+                padding: 5rem 1rem 6rem 1rem;
             }
             .chat-input-container {
                 border-radius: 1.5rem;
@@ -2307,9 +2307,6 @@
                 </div>
             </div>
             <div class="sidebar-footer">
-                <button id="limpar-conversas-btn" class="modal-btn confirm">
-                    <i class="fas fa-trash-alt"></i>Limpar Conversas
-                </button>
                 <div id="user-id-display" class="user-id-display"></div>
             </div>
         </div>
@@ -2321,7 +2318,7 @@
                         <span id="response-time-text"></span>
                         <div class="loading-typing-indicator">
                             <div class="tech-spinner"></div>
-                            <span>Gerando conteúdo...</span>
+                            <span>Pensando..</span>
                         </div>
                     </span>
                     <span id="token-count-sidebar" class="status-indicator">Tokens: 0</span>
@@ -2347,7 +2344,7 @@
             <div class="chat-messages" id="mensagens-container">
                 <div id="loader" class="loading-typing-indicator" style="display: none;">
                     <canvas id="neural-canvas" width="200" height="40" style="margin-right: 0.5rem;"></canvas>
-                    <span>Gerando conteúdo...</span>
+                    <span>Pensando..</span>
                 </div>
                 <div id="no-chat-message" class="initial-info-message">
                     <div class="message system">
@@ -2419,49 +2416,6 @@
             <button id="close-personalidade-modal-btn" class="modal-btn cancel">
                 Fechar
             </button>
-        </div>
-    </div>
-
-    <!-- Modal de Limpeza de Conversas -->
-    <div id="limpar-conversas-modal" class="modal-backdrop">
-        <div class="modal-content limpar-modal-content">
-            <h3>Limpar Conversas</h3>
-            <p class="modal-description">Escolha como deseja limpar suas conversas:</p>
-
-            <div class="limpar-options">
-                <label class="limpar-option">
-                    <input type="radio" name="limpar-opcao" value="ativas" checked>
-                    <div class="option-content">
-                        <h4>Conversas Ativas</h4>
-                        <p>Limpa apenas as conversas que estão sendo mostradas na lista principal</p>
-                    </div>
-                </label>
-
-                <label class="limpar-option">
-                    <input type="radio" name="limpar-opcao" value="antigas">
-                    <div class="option-content">
-                        <h4>Conversas Antigas</h4>
-                        <p>Limpa conversas não modificadas há mais de 30 dias</p>
-                    </div>
-                </label>
-
-                <label class="limpar-option">
-                    <input type="radio" name="limpar-opcao" value="todas">
-                    <div class="option-content">
-                        <h4>Todas as Conversas</h4>
-                        <p>Limpa todas as conversas ativas (recomendado para começar do zero)</p>
-                    </div>
-                </label>
-            </div>
-
-            <div class="modal-actions">
-                <button id="close-limpar-modal-btn" class="modal-btn cancel">
-                    Cancelar
-                </button>
-                <button id="confirmar-limpar-btn" class="modal-btn confirm">
-                    <i class="fas fa-trash-alt"></i>Limpar Conversas
-                </button>
-            </div>
         </div>
     </div>
 
@@ -2544,7 +2498,6 @@
             const darkBtn = document.getElementById('dark-mode-toggle');
             const darkBtnMobile = document.getElementById('dark-mode-toggle-mobile');
             const novaConversaBtn = document.getElementById('nova-conversa-btn');
-            const limparConversasBtn = document.getElementById('limpar-conversas-btn');
             const conversasLista = document.getElementById('conversas-lista');
             const mensagensContainer = document.getElementById('mensagens-container');
             const mensagemInput = document.getElementById('mensagem-input');
@@ -3457,13 +3410,6 @@
                 if (modal) modal.style.display = 'flex';
             }
 
-            limparConversasBtn.addEventListener('click', () => {
-                const limparModal = document.getElementById('limpar-conversas-modal');
-                if (limparModal) {
-                    limparModal.style.display = 'flex';
-                }
-            });
-
             if (shareBtn) {
                 shareBtn.addEventListener('click', async () => {
                     if (!currentConversationId) {
@@ -3972,58 +3918,6 @@
                     localStorage.removeItem('lastConversationId');
                     // Redirecionar para a página inicial
                     window.location.href = '/';
-                });
-            }
-
-            // Event listeners para modal de limpeza
-            const limparModal = document.getElementById('limpar-conversas-modal');
-            const closeLimparModalBtn = document.getElementById('close-limpar-modal-btn');
-            const confirmarLimparBtn = document.getElementById('confirmar-limpar-btn');
-
-            if (closeLimparModalBtn) {
-                closeLimparModalBtn.addEventListener('click', () => {
-                    if (limparModal) limparModal.style.display = 'none';
-                });
-            }
-
-            if (limparModal) {
-                limparModal.addEventListener('click', (e) => {
-                    if (e.target === limparModal) {
-                        limparModal.style.display = 'none';
-                    }
-                });
-            }
-
-            if (confirmarLimparBtn) {
-                confirmarLimparBtn.addEventListener('click', async () => {
-                    const selectedOption = document.querySelector('input[name="limpar-opcao"]:checked');
-                    if (!selectedOption) {
-                        showToast('Selecione uma opção de limpeza.', 'error');
-                        return;
-                    }
-
-                    const opcao = selectedOption.value;
-
-                    try {
-                        const response = await fetch('/api/limpar/', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': csrfToken,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ opcao: opcao }),
-                        });
-
-                        if (!response.ok) throw new Error('Falha ao limpar as conversas.');
-
-                        showInitialState();
-                        await loadConversations();
-                        showToast('Conversas limpas com sucesso!', 'success');
-                        if (limparModal) limparModal.style.display = 'none';
-                    } catch (error) {
-                        console.error('Erro ao limpar conversas:', error);
-                        showToast('Erro ao limpar conversas: ' + error.message, 'error');
-                    }
                 });
             }
 
